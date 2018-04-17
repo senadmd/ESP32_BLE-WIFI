@@ -38,13 +38,16 @@
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
 
+#include <freertos/task.h>
+
 #define GATTC_TAG "GATTC_DEMO"
 #define REMOTE_SERVICE_UUID        0xADA7
-#define REMOTE_NOTIFY_CHAR_UUID    0xFF01
+#define REMOTE_NOTIFY_CHAR_UUID    0xADB1
 #define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE   0
 
+static const char* CharacteristicStorageKey = "PARVEL_DHCP";
 static const char remote_device_name[] = "ESP_GATTS_DEMO";
 static bool connect    = false;
 static bool get_server = false;
@@ -98,11 +101,35 @@ static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
         .gattc_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
     },
 };
+static char hex [] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                        '8', '9' ,'A', 'B', 'C', 'D', 'E', 'F' };
+char *getCharValue(uint8_t *value, uint16_t length)
+{
+    uint8_t num;
+    uint8_t counter = 0;
+    uint8_t pos = 0;
+    uint8_t allocLength = length * 2 + 1; //each hex (0xFF) is stored in uint8_t, to print requires two letters + null ending 
+    char *buffer = malloc(allocLength);
+    if (length != 0)
+    {
+        while (counter < length)
+        {
+            num = *(value + counter);
+            //get the equivalent hex digit
+            buffer[pos] = hex[(num >> 4) & 0xF];
+            buffer[pos + 1] = hex[num & 0xF];
+            pos = pos + 2;
+            counter++;
+        }
+    }
+    // Now null terminate.
+    buffer[pos] = '\0';
+    return buffer;
+}
 
 static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param)
 {
     esp_ble_gattc_cb_param_t *p_data = (esp_ble_gattc_cb_param_t *)param;
-
     switch (event) {
     case ESP_GATTC_REG_EVT:
         ESP_LOGI(GATTC_TAG, "REG_EVT");
@@ -185,9 +212,9 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
                     }
 
                     /*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
-                    if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)){
-                        gl_profile_tab[PROFILE_A_APP_ID].char_handle = char_elem_result[0].char_handle;
-                        esp_ble_gattc_register_for_notify (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].remote_bda, char_elem_result[0].char_handle);
+                    if (count > 0 && (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_READ)){
+                         gl_profile_tab[PROFILE_A_APP_ID].char_handle = char_elem_result[0].char_handle;
+                         esp_ble_gattc_read_char (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, char_elem_result[0].char_handle,ESP_GATT_AUTH_REQ_NONE);
                     }
                 }
                 /* free char_elem_result */
@@ -295,6 +322,18 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             break;
         }
         ESP_LOGI(GATTC_TAG, "write char success ");
+        break;
+    case ESP_GATTC_READ_CHAR_EVT:
+        if (p_data->read.status != ESP_GATT_OK){
+             ESP_LOGE(GATTC_TAG, "read char failed, error status = %x", p_data->read.status);
+        }else{
+            ESP_LOGI(GATTC_TAG, "ESP_GATTC_READ_CHAR_EVT, receive value:");
+        }
+        esp_log_buffer_hex(GATTC_TAG, p_data->read.value, p_data->read.value_len);
+        char* ipAddr = getCharValue(p_data->read.value,p_data->read.value_len);
+        ESP_LOGI(GATTC_TAG, "Converted value: %s", ipAddr);
+        vTaskDelay(100);
+        esp_ble_gattc_read_char (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle,ESP_GATT_AUTH_REQ_NONE);
         break;
     case ESP_GATTC_DISCONNECT_EVT:
         connect = false;
