@@ -43,7 +43,6 @@
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE 0
 
-static const char *CharacteristicStorageKey = "PARVEL_DHCP";
 static const char remote_device_name[] = "ESP_GATTS_DEMO";
 static bool connect = false;
 static bool get_server = false;
@@ -104,8 +103,8 @@ static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
 };
 static char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7',
                      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-// Function for reading out DHCP ByteArray: (From android device: BigInteger.valueOf(WifiManager.getConnectionInfo().getIpAddress()).toByteArray())
-char *getCharValue(uint8_t *value, uint16_t length)
+// For reading out ByteArray to Hex-string
+char *bytesToHexStr(uint8_t *value, uint16_t length)
 {
     uint8_t num;
     uint8_t counter = 0;
@@ -373,7 +372,7 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
             //print received hex
             esp_log_buffer_hex(GATTC_TAG, p_data->read.value, p_data->read.value_len);
             //convert DHCP-byteArray to string
-            char *ipAddr = getCharValue(p_data->read.value, p_data->read.value_len);
+            char *ipAddr = bytesToHexStr(p_data->read.value, p_data->read.value_len);
             ESP_LOGI(GATTC_TAG, "Converted value: %s", ipAddr);
             // release memory of variable
             free(ipAddr);
