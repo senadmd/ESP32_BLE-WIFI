@@ -38,7 +38,7 @@
 
 #define GATTC_TAG "GATTC_DEMO"
 #define REMOTE_SERVICE_UUID 0xADA7
-#define REMOTE_NOTIFY_CHAR_UUID 0xADB1
+#define REMOTE_READ_CHAR_UUID 0xADB1
 #define PROFILE_NUM 1
 #define PROFILE_A_APP_ID 0
 #define INVALID_HANDLE 0
@@ -64,7 +64,7 @@ static esp_bt_uuid_t remote_filter_service_uuid = {
 static esp_bt_uuid_t remote_filter_char_uuid = {
     .len = ESP_UUID_LEN_16,
     .uuid = {
-        .uuid16 = REMOTE_NOTIFY_CHAR_UUID,
+        .uuid16 = REMOTE_READ_CHAR_UUID,
     },
 };
 
