@@ -5,7 +5,7 @@
 #include "esp_log.h"
 
 extern void bt_main();
-
+extern void wifi_main();
 
 void app_main(void)
 {
@@ -18,6 +18,7 @@ void app_main(void)
     ESP_ERROR_CHECK( ret );
 
     xTaskCreate(&bt_main, "btTask", 2000, NULL, 0, NULL);
+    xTaskCreate(&wifi_main, "wifiTask", 2000, NULL, 0, NULL);
 
     while(true){
         ESP_LOGI("MAIN", "RUNNING MAIN.");
