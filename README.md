@@ -1,9 +1,11 @@
-ESP-IDF GATT CLIENT demo
+ESP-IDF MODIFIED GATT CLIENT (BLE) & WIFI SMARTCONFIG DEMO
 ========================
+_Changes based on ESP-IDF Examples_
+* Added BLE service filter based on UUID
+* Added continuous characteristic read
+* Modified BLE disconnected event so that client/ESP tries to reestablish connection
+* Both BLE GATT Client and WIFI SmartConfig run simultaneously demonstrating dual use of Wifi/BLE
+_Usage_
+* Run `make menuconfig` and chose custom partition table using (partitions.csv)
+* Flash using `make flash`
 
-This is the demo for user to use ESP_APIs to create a GATT Client.
-Run the gatt_server demo, the client demo will automatically connect to the gatt_server demo.
-Client demo will enable gatt_server's notify after connection. Then the two devices will exchange
-data.
-
-Please check the [tutorial](tutorial/gatt_client_example_walkthrough.md) for more information about this example.
