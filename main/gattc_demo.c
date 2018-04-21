@@ -27,8 +27,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "nvs.h"
-#include "nvs_flash.h"
 #include "controller.h"
 
 #include "esp_bt.h"
@@ -332,6 +330,7 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
         esp_log_buffer_hex(GATTC_TAG, p_data->read.value, p_data->read.value_len);
         char* ipAddr = getCharValue(p_data->read.value,p_data->read.value_len);
         ESP_LOGI(GATTC_TAG, "Converted value: %s", ipAddr);
+        free(ipAddr);
         vTaskDelay(100);
         esp_ble_gattc_read_char (gattc_if, gl_profile_tab[PROFILE_A_APP_ID].conn_id, gl_profile_tab[PROFILE_A_APP_ID].char_handle,ESP_GATT_AUTH_REQ_NONE);
         break;
@@ -347,6 +346,7 @@ static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_
 
 static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
+    ESP_LOGI(GATTC_TAG, "event info occured");
     uint8_t *adv_name = NULL;
     uint8_t adv_name_len = 0;
     esp_bt_uuid_t found_uuid = (esp_bt_uuid_t){0};
@@ -364,7 +364,6 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
             break;
         }
         ESP_LOGI(GATTC_TAG, "scan start success");
-
         break;
     case ESP_GAP_BLE_SCAN_RESULT_EVT: {
         esp_ble_gap_cb_param_t *scan_result = (esp_ble_gap_cb_param_t *)param;
@@ -461,6 +460,7 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *par
     default:
         break;
     }
+    ESP_LOGI(GATTC_TAG, "status callback success");
 }
 
 static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param)
@@ -492,15 +492,9 @@ static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp
     } while (0);
 }
 
-void app_main()
+void bt_main()
 {
-    // Initialize NVS.
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK( ret );
+    esp_err_t ret;
 
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT));
 
@@ -551,6 +545,10 @@ void app_main()
     if (local_mtu_ret){
         ESP_LOGE(GATTC_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
-
+    
+    while(true){
+         vTaskDelay(1000);
+    }
+    vTaskDelete( NULL );
 }
 
