@@ -1,6 +1,6 @@
 ESP-IDF MODIFIED GATT CLIENT (BLE) & WIFI SMARTCONFIG DEMO
 ========================
-Both BLE GATT Client and WIFI SmartConfig run simultaneously using threading demonstrating the dual use of Wifi/BLE on the ESP32-module.
+The BLE GATT Client and WIFI SmartConfig samples are configured to run simultaneously using the threading functionality of ESP32 thereby demonstrating the dual use of Wifi/BLE on the ESP32-module.
 
 Based on following samples:  
 https://github.com/espressif/esp-idf/tree/master/examples/wifi/smart_config  
