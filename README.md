@@ -13,6 +13,6 @@ https://github.com/espressif/esp-idf/tree/master/examples/bluetooth/gatt_client
 * Modified BLE disconnected event (_ESP_GATTC_DISCONNECT_EVT_) so that client/ESP tries to reestablish connection
 
 ##### Usage
-* Run `make menuconfig` and chose custom partition table using (partitions.csv)
+* Run `make menuconfig` and choose custom partition table using (partitions.csv)
 * Flash using `make flash`
 
